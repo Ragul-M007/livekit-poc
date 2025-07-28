@@ -49,3 +49,24 @@
 .leave-btn:hover {
   background-color: #c82333;
 }
+
+
+.live-user-card {
+  border: 1px solid #ccc;
+  padding: 12px;
+  margin: 8px;
+  border-radius: 10px;
+}
+
+.join-btn, .leave-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.leave-btn {
+  background-color: #ff4444;
+}

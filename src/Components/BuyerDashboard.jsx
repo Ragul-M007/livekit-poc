@@ -247,6 +247,7 @@ const BuyerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeRooms, setActiveRooms] = useState([]); // Track multiple room connections
   const [message, setMessage] = useState("");
+  const [joinedRoomId, setJoinedRoomId] = useState(null);
   const videoContainersRef = useRef({}); 
 
   useEffect(() => {
@@ -312,6 +313,7 @@ const BuyerDashboard = () => {
       if (res.data?.token) {
         const token = res.data.token;
         await connectToLiveRoom(token, room_id);
+        setJoinedRoomId(room_id);
       } else {
         setMessage("Failed to retrieve token.");
       }
@@ -423,73 +425,78 @@ const BuyerDashboard = () => {
     }
     
     setMessage("");
+    setJoinedRoomId(null);
   };
 
   return (
-    <div className="buyer-dashboard">
-      <h2>Buyer Dashboard</h2>
+  <div className="buyer-dashboard">
+    <h2>Buyer Dashboard</h2>
+    {message && <p className="message">{message}</p>}
 
-      {message && <p className="message">{message}</p>}
-
-      {activeRooms.length > 0 && (
+    {/* If a stream is joined, show only that */}
+    {joinedRoomId ? (
+      <>
         <div className="active-streams">
-          <h3>Active Streams</h3>
-          {activeRooms.map((roomInfo) => (
-            <div key={roomInfo.room_id} className="stream-container">
-              <div
-                id={roomInfo.container_id}
-                style={{ 
-                  width: "600px", 
-                  height: "400px", 
-                  backgroundColor: "black",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  margin: "10px auto"
-                }}
-              />
-              <button 
-                onClick={() => handleLeave(roomInfo.room_id)} 
-                className="leave-btn"
-                style={{ 
-                  marginTop: "10px",
-                  display: "block",
-                  margin: "10px auto"
-                }}
-              >
-                Leave Stream
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {loading ? (
-        <p>Loading...</p>
-      ) : liveUsers.length === 0 ? (
-        <p>No live users currently.</p>
-      ) : (
-        <div className="live-users-list">
-          <h3>Available Live Streams</h3>
-          {liveUsers.map((user, index) => {
-            const isConnected = activeRooms.some(roomInfo => roomInfo.room_id === user.room_id);
-            return (
-              <div key={`${user.user_id}-${user.room_id}`} className="live-user-card">
-                <p><strong>{user.user_name}</strong></p>
-                <p>Room: {user.room_name}</p>
-                <button
-                  onClick={() => handleJoin(user.room_id)}
-                  className="join-btn"
-                  disabled={isConnected}
-                >
-                  {isConnected ? "Connected" : "Join"}
-                </button>
+          {activeRooms
+            .filter(roomInfo => roomInfo.room_id === joinedRoomId)
+            .map((roomInfo) => (
+              <div key={roomInfo.room_id} className="stream-container">
+                <div
+                  id={roomInfo.container_id}
+                  style={{
+                    width: "600px",
+                    height: "400px",
+                    backgroundColor: "black",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    margin: "10px auto"
+                  }}
+                />
+                <div style={{ textAlign: "center", marginTop: "20px" }}>
+                  <button onClick={() => handleLeave(roomInfo.room_id)} className="leave-btn" style={{ marginRight: "10px" }}>
+                    Leave Stream
+                  </button>
+                  <button onClick={() => setJoinedRoomId(null)} style={{ marginRight: "10px" }}>
+                    Back to Streams
+                  </button>
+                </div>
               </div>
-            );
-          })}
+            ))}
         </div>
-      )}
-    </div>
-  );
+      </>
+    ) : (
+      <>
+        {/* List of live users */}
+        {loading ? (
+          <p>Loading...</p>
+        ) : liveUsers.length === 0 ? (
+          <p>No live users currently.</p>
+        ) : (
+          <div className="live-users-list">
+            <h3>Available Live Streams</h3>
+            {liveUsers.map((user) => {
+              const isConnected = activeRooms.some(roomInfo => roomInfo.room_id === user.room_id);
+              return (
+                <div key={`${user.user_id}-${user.room_id}`} className="live-user-card">
+                  <p><strong>{user.user_name}</strong></p>
+                  <p>Room: {user.room_name}</p>
+                  <button
+                    onClick={() => handleJoin(user.room_id)}
+                    className="join-btn"
+                    disabled={isConnected}
+                  >
+                    {isConnected ? "Connected" : "Join"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </>
+    )}
+  </div>
+);
+
 };
 
 export default BuyerDashboard;
