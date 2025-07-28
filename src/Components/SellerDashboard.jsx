@@ -227,13 +227,14 @@ const SellerDashboard = () => {
   const [roomInfo, setRoomInfo] = useState(null);
   const [endMessage, setEndMessage] = useState("");
 
-    const [videoDeviceId, setVideoDeviceId] = useState(null); 
-    const [videoDevices, setVideoDevices] = useState([]);     
-    const currentVideoTrackRef = useRef(null);   
+const [videoDeviceId, setVideoDeviceId] = useState(null); 
+const [videoDevices, setVideoDevices] = useState([]);     
+const currentVideoTrackRef = useRef(null);   
 
-    const [isMicOn, setIsMicOn] = useState(true);
-    const [isCameraOn, setIsCameraOn] = useState(true);
-    const currentAudioTrackRef = useRef(null); 
+const [isMicOn, setIsMicOn] = useState(true);
+const [isCameraOn, setIsCameraOn] = useState(true);
+const currentAudioTrackRef = useRef(null); // For mic control
+
 
 
   const localVideoRef = useRef(null);
@@ -246,16 +247,54 @@ const SellerDashboard = () => {
     };
   }, [room]);
 
-  // ✅ Fetch all video input devices when component mounts
 useEffect(() => {
-  navigator.mediaDevices.enumerateDevices().then((devices) => {
-    const videos = devices.filter((d) => d.kind === "videoinput");
-    setVideoDevices(videos);
-    if (videos.length > 0) {
-      setVideoDeviceId(videos[0].deviceId); // default to first device
-    }
-  });
+  if (navigator.mediaDevices && typeof navigator.mediaDevices.enumerateDevices === "function") {
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      const videos = devices.filter((d) => d.kind === "videoinput");
+      setVideoDevices(videos);
+      if (videos.length > 0) {
+        setVideoDeviceId(videos[0].deviceId); // default to first device
+      }
+    }).catch(err => {
+      console.error("Error accessing media devices:", err);
+      setMessage("Unable to access camera devices.");
+    });
+  } else {
+    console.warn("Media devices API not supported.");
+    setMessage("This browser does not support accessing media devices.");
+  }
 }, []);
+
+
+useEffect(() => {
+  const cleanup = () => {
+    if (room) {
+      console.log("Cleaning up room after confirmed leave...");
+      room.disconnect();
+    }
+  };
+
+  window.addEventListener("unload", cleanup);
+
+  return () => {
+    window.removeEventListener("unload", cleanup);
+  };
+}, [room]);
+
+
+useEffect(() => {
+  const handleBeforeUnload = (e) => {
+    e.preventDefault();
+    e.returnValue = ""; // Required to trigger prompt
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+
+  return () => {
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+  };
+}, []);
+
 
 
 
@@ -268,6 +307,7 @@ useEffect(() => {
   const nextDeviceId = videoDevices[nextIndex].deviceId;
 
   try {
+    // ✅ Create new video track with next camera
     const newVideoTrack = await createLocalVideoTrack({
       deviceId: { exact: nextDeviceId }
     });
