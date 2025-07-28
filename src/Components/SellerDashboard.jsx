@@ -247,77 +247,38 @@ const currentAudioTrackRef = useRef(null);
     };
   }, [room]);
 
-// Improved check for secure context and API availability
-  useEffect(() => {
-    const isSecureContext = window.isSecureContext;
-    const isMediaDevicesSupported = navigator.mediaDevices &&
-                                    typeof navigator.mediaDevices.enumerateDevices === "function";
-
-    console.log("Secure Context:", isSecureContext);
-    console.log("Media Devices API Supported:", isMediaDevicesSupported);
-
-    if (!isSecureContext) {
-      const errorMsg = "Camera/microphone access requires a secure context (HTTPS or localhost).";
-      console.warn(errorMsg);
-      setMessage(errorMsg);
-      return;
-    }
-
-    if (isMediaDevicesSupported) {
-      navigator.mediaDevices.enumerateDevices()
-        .then((devices) => {
-          console.log("Available media devices:", devices);
-          const videos = devices.filter((d) => d.kind === "videoinput");
-          setVideoDevices(videos);
-          if (videos.length > 0 && !videoDeviceId) {
-            setVideoDeviceId(videos[0].deviceId);
-          }
-        })
-        .catch(err => {
-          console.error("Error enumerating media devices:", err);
-          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            setMessage("Permission denied to access media devices. Please check browser settings.");
-          } else {
-            setMessage("Unable to list camera devices. Please check browser settings or console for details.");
-          }
-        });
-    } else {
-      const errorMsg = "This browser does not support the media devices API needed for camera selection.";
-      console.warn(errorMsg);
-      setMessage(errorMsg);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
 
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (room) {
-        e.preventDefault();
-        e.returnValue = "You are currently streaming. Are you sure you want to leave?";
-        return e.returnValue;
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [room]);
 
 
-useEffect(() => {
-  const handleBeforeUnload = (e) => {
-    e.preventDefault();
-    e.returnValue = ""; // Required to trigger prompt
-  };
+//   useEffect(() => {
+//     const handleBeforeUnload = (e) => {
+//       if (room) {
+//         e.preventDefault();
+//         e.returnValue = "You are currently streaming. Are you sure you want to leave?";
+//         return e.returnValue;
+//       }
+//     };
 
-  window.addEventListener("beforeunload", handleBeforeUnload);
+//     window.addEventListener("beforeunload", handleBeforeUnload);
+//     return () => {
+//       window.removeEventListener("beforeunload", handleBeforeUnload);
+//     };
+//   }, [room]);
 
-  return () => {
-    window.removeEventListener("beforeunload", handleBeforeUnload);
-  };
-}, []);
+
+// useEffect(() => {
+//   const handleBeforeUnload = (e) => {
+//     e.preventDefault();
+//     e.returnValue = ""; // Required to trigger prompt
+//   };
+
+//   window.addEventListener("beforeunload", handleBeforeUnload);
+
+//   return () => {
+//     window.removeEventListener("beforeunload", handleBeforeUnload);
+//   };
+// }, []);
 
 
 
