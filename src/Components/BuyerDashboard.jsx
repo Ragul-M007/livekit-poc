@@ -354,6 +354,7 @@ const BuyerDashboard = () => {
         const element = track.attach();
         element.autoplay = true;
         element.playsInline = true;
+        element.muted = false;
         
         if (track.kind === "video") {
           element.style.width = "100%";

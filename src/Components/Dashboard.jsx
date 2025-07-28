@@ -20,7 +20,7 @@ const Dashboard = () => {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.clear(); // Remove all saved data
+    localStorage.clear(); 
     navigate("/login");
   };
 
