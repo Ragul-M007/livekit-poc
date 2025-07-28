@@ -404,42 +404,48 @@ const generateBroadcasterIdentity = () => {
     }
   };
 
-  const joinLiveKitRoom = async (token) => {
-    try {
-      const livekitRoom = new Room({
-        adaptiveStream: true,
-        dynacast: true,
-      });
+ const joinLiveKitRoom = async (token) => {
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setMessage("This browser does not support media access (camera/microphone).");
+      return;
+    }
 
-      await livekitRoom.connect(LIVEKIT_URL, token, {
-        autoSubscribe: true,
-      });
+    const livekitRoom = new Room({
+      adaptiveStream: true,
+      dynacast: true,
+    });
 
-      setRoom(livekitRoom);
+    await livekitRoom.connect(LIVEKIT_URL, token, {
+      autoSubscribe: true,
+    });
 
-      const localTracks = await createLocalTracks({
-        audio: true,
-        video: { deviceId: videoDeviceId ? { exact: videoDeviceId } : undefined },
-      });
+    setRoom(livekitRoom);
 
-      for (const track of localTracks) {
-  await livekitRoom.localParticipant.publishTrack(track);
-  if (track.kind === "video") currentVideoTrackRef.current = track;
-  if (track.kind === "audio") currentAudioTrackRef.current = track;
-}
+    const localTracks = await createLocalTracks({
+      audio: true,
+      video: { deviceId: videoDeviceId ? { exact: videoDeviceId } : undefined },
+    });
 
-      const videoTrack = localTracks.find((t) => t.kind === "video");
+    for (const track of localTracks) {
+      await livekitRoom.localParticipant.publishTrack(track);
+      if (track.kind === "video") currentVideoTrackRef.current = track;
+      if (track.kind === "audio") currentAudioTrackRef.current = track;
+    }
+
+    const videoTrack = localTracks.find((t) => t.kind === "video");
     if (videoTrack && localVideoRef.current) {
       localVideoRef.current.srcObject = new MediaStream([videoTrack.mediaStreamTrack]);
       localVideoRef.current.play();
     }
 
-      setMessage("Connected to live room and streaming!");
-    } catch (error) {
-      console.error("LiveKit join error:", error);
-      setMessage("Failed to connect to live stream.");
-    }
-  };
+    setMessage("Connected to live room and streaming!");
+  } catch (error) {
+    console.error("LiveKit join error:", error);
+    setMessage("Failed to connect to live stream.");
+  }
+};
+
 
   const toggleCamera = async () => {
   if (!room || !currentVideoTrackRef.current) return;
