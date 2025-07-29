@@ -325,7 +325,11 @@ const SellerDashboard = () => {
 
       const localTracks = await createLocalTracks({ audio: true, video: true });
 
+      console.log("live kit url audio and video tracks created");
+
+
       for (const track of localTracks) {
+        console.log("live kit url publishing track", track.kind);
         await livekitRoom.localParticipant.publishTrack(track);
         if (track.kind === "video") currentVideoTrackRef.current = track;
         if (track.kind === "audio") currentAudioTrackRef.current = track;
@@ -336,6 +340,8 @@ const SellerDashboard = () => {
         localVideoRef.current.srcObject = new MediaStream([videoTrack.mediaStreamTrack]);
         localVideoRef.current.play();
       }
+
+        console.log("live kit url video track attached");
 
       setMessage("Connected to live room and streaming!");
     } catch (error) {
