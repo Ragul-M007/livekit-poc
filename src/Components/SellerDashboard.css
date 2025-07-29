@@ -1,137 +1,135 @@
+/* SellerDashboard.css */
+
+/* ==== Base Styles ==== */
 .seller-dashboard {
   padding: 20px;
-  max-width: 600px;
-  margin: auto;
-}
-
-.live-stream-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.button-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.live-stream-form input {
-  padding: 10px;
-  font-size: 16px;
-}
-
-.live-stream-form button {
-  padding: 10px;
-  font-size: 16px;
-  background-color: #1976d2;
+  text-align: center;
+  background-color: #121212;
   color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.video-container {
-  width: 100%;
-  max-width: 640px;
-  margin-top: 20px;
-  background-color: black;
-}
-.seller-dashboard {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #121212;
-  color: white;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.live-stream-form {
+h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.live-stream-form{
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 600px;
 }
 
-input[type="text"] {
-  padding: 10px;
-  font-size: 16px;
-  width: 300px;
-  border-radius: 6px;
-  border: none;
-}
 
-button {
-  padding: 10px;
-  font-size: 16px;
-  background-color: #2196f3;
+/* ==== Responsive Seller Dashboard Layout ==== */
+.seller-dashboard {
+  padding: 20px;
+  text-align: center;
+  background-color: #121212;
   color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-button:disabled {
-  background-color: #888;
-}
-
+/* ==== Responsive Video Container ==== */
 .livekit-video-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-}
-
-.end-live-btn {
-  background-color: #e53935;
-  padding: 12px 24px;
-  font-weight: bold;
-}
-
-.message,
-.end-message {
-  margin-top: 10px;
-  font-weight: bold;
-  color: #ffc107;
-}
-
-
-.seller-dashboard {
-  padding: 20px;
-  text-align: center;
-}
-
-.live-stream-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  width: 100%;
+  max-width: 640px;
   margin-top: 20px;
+  box-sizing: border-box;
+  padding: 0 16px;
 }
 
-.livekit-video-container {
-  margin: 20px auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
+/* ==== Responsive Video Element ==== */
 .livekit-video-container video {
   width: 100%;
-  max-width: 600px;
+  height: auto;
+  max-width: 100%;
   border-radius: 12px;
+  background-color: black;
+  object-fit: cover;
 }
 
-/* Buttons style */
-button {
-  padding: 10px 16px;
+/* ==== Button row responsive layout ==== */
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* ==== Media Queries ==== */
+@media (max-width: 768px) {
+  .seller-dashboard {
+    padding: 16px;
+  }
+
+  .livekit-video-container {
+    padding: 0 12px;
+  }
+
+  .button-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .seller-dashboard {
+    padding: 12px;
+  }
+
+  .livekit-video-container {
+    padding: 0 8px;
+  }
+
+  .livekit-video-container video {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+
+/* ==== Input Field ==== */
+input[type="text"] {
+  padding: 12px;
   font-size: 16px;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 6px;
   border: none;
-  border-radius: 8px;
+}
+
+/* ==== Buttons ==== */
+button {
+  padding: 12px 20px;
+  font-size: 16px;
   background-color: #007bff;
   color: white;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
+  width: 100%;
+  max-width: 400px;
 }
 
 button:disabled {
@@ -139,35 +137,38 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.toggle-btn, .switch-camera-btn, .end-live-btn {
-  margin: 5px;
+/* Special buttons */
+.end-live-btn {
+  background-color: #e53935;
+  font-weight: bold;
 }
 
-/* 💡 Responsive adjustments */
-@media (max-width: 600px) {
-  .live-stream-form {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .livekit-video-container video {
-    width: 90vw;
-  }
-
-  button {
-    width: 90%;
-    font-size: 14px;
-  }
-
-  input[type="text"] {
-    width: 90%;
-    font-size: 16px;
-    padding: 8px;
-    margin-bottom: 10px;
-  }
+/* ==== Video Styling ==== */
+video {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  background-color: black;
 }
 
+/* ==== Button Row ==== */
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+}
 
+/* ==== Messages ==== */
+.message,
+.end-message {
+  font-weight: bold;
+  color: #ffc107;
+  margin-top: 10px;
+}
+
+/* ==== Modal Styling ==== */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -186,6 +187,7 @@ button:disabled {
   padding: 24px;
   border-radius: 12px;
   text-align: center;
+  width: 90%;
   max-width: 400px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
@@ -194,13 +196,16 @@ button:disabled {
   margin-top: 20px;
   display: flex;
   justify-content: space-around;
+  flex-wrap: wrap;
 }
 
 .modal-buttons button {
-  padding: 8px 16px;
+  padding: 10px 16px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  width: 45%;
+  font-size: 14px;
 }
 
 .modal-buttons button:first-child {
@@ -210,4 +215,48 @@ button:disabled {
 .modal-buttons button:last-child {
   background-color: #e63946;
   color: white;
+}
+
+/* ==== Responsive Adjustments ==== */
+@media (max-width: 768px) {
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  input[type="text"],
+  button {
+    font-size: 15px;
+  }
+
+  .button-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .modal-buttons button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+ 
+}
+
+@media (max-width: 480px) {
+  input[type="text"] {
+    width: 90%;
+    padding: 10px;
+  }
+
+  button {
+    width: 90%;
+    font-size: 14px;
+  }
+
+  video {
+    width: 90vw;
+  }
+
+  .modal {
+    padding: 16px;
+  }
 }
