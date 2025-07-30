@@ -23,6 +23,7 @@ const App = () => {
               </PrivateRoute>
             }
           />
+          
         </Routes>
       </div>
     </Router>

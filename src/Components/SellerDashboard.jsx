@@ -210,9 +210,15 @@
 
 
 
+// ⬇️ Full SellerDashboard.jsx
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Room, createLocalTracks, createLocalVideoTrack } from "livekit-client";
+import {
+  Room,
+  createLocalTracks,
+  createLocalVideoTrack,
+  RoomEvent,
+} from "livekit-client";
 import "./SellerDashboard.css";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -226,6 +232,7 @@ const SellerDashboard = () => {
   const [room, setRoom] = useState(null);
   const [roomInfo, setRoomInfo] = useState(null);
   const [endMessage, setEndMessage] = useState("");
+  const [participants, setParticipants] = useState(0); 
 
   const localVideoRef = useRef(null);
   const currentVideoTrackRef = useRef(null);
@@ -235,11 +242,32 @@ const SellerDashboard = () => {
   const [isCameraOn, setIsCameraOn] = useState(true);
 
   useEffect(() => {
+    const isLive = localStorage.getItem("is_live");
+    const savedToken = localStorage.getItem("live_token");
+    const savedRoomId = localStorage.getItem("live_room_id");
+    const savedRoomName = localStorage.getItem("live_room_name");
+
+    if (isLive === "true" && savedToken && savedRoomId && savedRoomName) {
+      setToken(savedToken);
+      setRoomInfo({ room_id: savedRoomId, room_name: savedRoomName });
+      joinLiveKitRoom(savedToken);
+    }
+
     return () => {
       if (room) {
         room.disconnect();
       }
     };
+  }, []);
+
+  useEffect(() => {
+    const handleUnload = () => {
+      if (room) {
+        room.disconnect();
+      }
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
   }, [room]);
 
   const generateBroadcasterIdentity = () => {
@@ -265,7 +293,6 @@ const SellerDashboard = () => {
     const broadcasterIdentity = generateBroadcasterIdentity();
 
     try {
-
       const roomRes = await axios.post(`${baseURL}/live-streaming/create_room`, {
         user_id,
         title,
@@ -282,15 +309,18 @@ const SellerDashboard = () => {
           identity: broadcasterIdentity,
           room: room_id,
         });
-        
 
         if (tokenRes.data && tokenRes.data.token) {
           const livekitToken = tokenRes.data.token;
           setToken(livekitToken);
           setTitle("");
+
+          localStorage.setItem("is_live", "true");
+          localStorage.setItem("live_token", livekitToken);
+          localStorage.setItem("live_room_id", room_id);
+          localStorage.setItem("live_room_name", room_name);
+
           await joinLiveKitRoom(livekitToken);
-          console.log("region hitss");
-          
         } else {
           setMessage("Token generation failed.");
         }
@@ -306,10 +336,7 @@ const SellerDashboard = () => {
   };
 
   const joinLiveKitRoom = async (token) => {
-    
     try {
-      console.log("live kit url initial");
-
       const livekitRoom = new Room({
         adaptiveStream: true,
         dynacast: true,
@@ -321,16 +348,9 @@ const SellerDashboard = () => {
 
       setRoom(livekitRoom);
 
-      console.log("live kit url 111");
-      
-
       const localTracks = await createLocalTracks({ audio: true, video: true });
 
-      console.log("live kit url audio and video tracks created");
-
-
       for (const track of localTracks) {
-        console.log("live kit url publishing track", track.kind);
         await livekitRoom.localParticipant.publishTrack(track);
         if (track.kind === "video") currentVideoTrackRef.current = track;
         if (track.kind === "audio") currentAudioTrackRef.current = track;
@@ -341,12 +361,18 @@ const SellerDashboard = () => {
         localVideoRef.current.srcObject = new MediaStream([videoTrack.mediaStreamTrack]);
         localVideoRef.current.play();
       }
+      setParticipants(livekitRoom.remoteParticipants.size);
 
-        console.log("live kit url video track attached");
+      // 👇 Listen to participant changes
+      livekitRoom.on(RoomEvent.ParticipantConnected, () => {
+        setParticipants((prev) => prev + 1);
+      });
+      livekitRoom.on(RoomEvent.ParticipantDisconnected, () => {
+        setParticipants((prev) => Math.max(1, prev - 1));
+      });
 
       setMessage("Connected to live room and streaming!");
     } catch (error) {
-        
       console.error("LiveKit join error:", error);
       setMessage("Failed to connect to live stream.");
     }
@@ -360,7 +386,10 @@ const SellerDashboard = () => {
       currentVideoTrackRef.current.stop();
       if (localVideoRef.current) localVideoRef.current.srcObject = null;
     } else {
-      const videoTrack = await createLocalVideoTrack();
+      const videoTrack = await createLocalVideoTrack({simulcast: true,
+  resolution: { width: 1280, height: 720 }, 
+  frameRate: 30,
+});
       await room.localParticipant.publishTrack(videoTrack);
       currentVideoTrackRef.current = videoTrack;
       if (localVideoRef.current) {
@@ -391,97 +420,108 @@ const SellerDashboard = () => {
   };
 
   const handleEndLive = async () => {
-  const user_id = localStorage.getItem("user_id");
+    const user_id = localStorage.getItem("user_id");
 
-  if (!roomInfo || !user_id) {
-    setEndMessage("Missing room or user info to end stream.");
-    return;
-  }
-
-  try {
-    setLoading(true); // Show button loading state instead
-
-    const response = await axios.post(`${baseURL}/end-live`, {
-      user_id: parseInt(user_id, 10),
-      room_id: roomInfo.room_id,
-      room_name: roomInfo.room_name,
-    });
-
-    if (response.data.status) {
-      setEndMessage(response.data.message || "Live stream ended.");
-    } else {
-      setEndMessage(response.data.message || "Failed to end live stream.");
+    if (!roomInfo || !user_id) {
+      setEndMessage("Missing room or user info to end stream.");
+      return;
     }
-  } catch (error) {
-    setEndMessage("An error occurred: " + (error.response?.data?.message || error.message));
-  } finally {
-    if (room) {
-      room.disconnect();
-      setRoom(null);
-    }
-    setToken(null);
-    setRoomInfo(null);
-    setTitle("");
-    setMessage(""); 
-    setLoading(false); // Reset loading
-  }
-};
 
+    try {
+      setLoading(true);
+
+      const response = await axios.post(`${baseURL}/end-live`, {
+        user_id: parseInt(user_id, 10),
+        room_id: roomInfo.room_id,
+        room_name: roomInfo.room_name,
+      });
+
+      if (response.data.status) {
+        setEndMessage(response.data.message || "Live stream ended.");
+      } else {
+        setEndMessage(response.data.message || "Failed to end live stream.");
+      }
+    } catch (error) {
+      setEndMessage("An error occurred: " + (error.response?.data?.message || error.message));
+    } finally {
+      if (room) {
+        room.disconnect();
+        setRoom(null);
+      }
+
+      setToken(null);
+      setRoomInfo(null);
+      setTitle("");
+      setMessage("");
+      setLoading(false);
+
+      localStorage.removeItem("is_live");
+      localStorage.removeItem("live_token");
+      localStorage.removeItem("live_room_id");
+      localStorage.removeItem("live_room_name");
+    }
+  };
 
   return (
-  <div className="seller-dashboard">
-    <h2>Seller Dashboard</h2>
+    <div className="seller-dashboard">
+      <h2>Seller</h2>
 
-    {token ? (
-      <div className="livekit-video-container">
-        <video
-          ref={localVideoRef}
-          autoPlay
-          muted
-          playsInline
-          style={{ width: "600px", borderRadius: "12px" }}
-        />
+      {token ? (
+        <div className="livekit-video-container">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            muted
+            playsInline
+            style={{ width: "600px", borderRadius: "12px" }}
+          />
 
-        <div className="button-row">
-          <button
-            onClick={toggleMic}
-            disabled={!room || !currentAudioTrackRef.current}
-          >
-            {isMicOn ? "Mute Mic" : "Unmute Mic"}
-          </button>
+          {/* 👇 Participant Count */}
+          <p style={{ textAlign: "center", marginTop: "10px" }}>
+            👀 Viewers: <strong>{participants}</strong>
+          </p>
 
-          <button
-            onClick={toggleCamera}
-            disabled={!room || (!currentVideoTrackRef.current && isCameraOn)}
-          >
-            {isCameraOn ? "Turn Off Camera" : "Turn On Camera"}
-          </button>
+          <div className="button-row">
+            <button
+              onClick={toggleMic}
+              disabled={!room || !currentAudioTrackRef.current}
+            >
+              {isMicOn ? "Mute Mic" : "Unmute Mic"}
+            </button>
 
-          <button onClick={handleEndLive} disabled={loading}>
-            {loading ? "Ending..." : "End Live"}
-          </button>
+            <button
+              onClick={toggleCamera}
+              disabled={!room || (!currentVideoTrackRef.current && isCameraOn)}
+            >
+              {isCameraOn ? "Turn Off Camera" : "Turn On Camera"}
+            </button>
+
+            <button onClick={handleEndLive} disabled={loading}>
+              {loading ? "Ending..." : "End Live"}
+            </button>
+          </div>
+
+          {endMessage && <p className="end-message">{endMessage}</p>}
         </div>
+      ) : (
+        <div className="live-stream-form">
+          <input
+            type="text"
+            placeholder="Enter live stream title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <button onClick={handleStartLive} disabled={loading || !title.trim()}>
+            {loading ? "Starting..." : "Start Live"}
+          </button>
 
-        {endMessage && <p className="end-message">{endMessage}</p>}
-      </div>
-    ) : (
-      <div className="live-stream-form">
-        <input
-          type="text"
-          placeholder="Enter live stream title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <button onClick={handleStartLive} disabled={loading || !title.trim()}>
-          {loading ? "Starting..." : "Start Live"}
-        </button>
-
-        {message && <p className="message">{message}</p>}
-      </div>
-    )}
-  </div>
-);
-
+          {message && <p className="message">{message}</p>}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default SellerDashboard;
+
+
