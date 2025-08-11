@@ -260,3 +260,33 @@ video {
     padding: 16px;
   }
 }
+
+
+
+.chat-container {
+  margin-top: 20px;
+  max-width: 600px;
+}
+
+.chat-messages {
+  background: #f1f1f1;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.chat-input {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px;
+}
+
+.chat-input button {
+  padding: 8px 12px;
+}
