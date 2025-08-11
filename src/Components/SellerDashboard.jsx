@@ -863,6 +863,7 @@ const SellerDashboard = () => {
           }}>
             <div style={{
               backgroundColor: "#f5f5f5",
+              color:'black',
               padding: "10px",
               fontWeight: "600",
               borderBottom: "1px solid #eee",
@@ -922,7 +923,7 @@ const SellerDashboard = () => {
                 placeholder="Type a message..."
                 disabled={!isChatEnabled}
                 style={{
-                  flex: 1,
+                  // flex: 1,
                   padding: "8px 12px",
                   border: "1px solid #ccc",
                   borderRadius: "20px",

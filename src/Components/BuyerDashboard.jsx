@@ -892,7 +892,7 @@ const BuyerDashboard = () => {
                 placeholder="Send a message..."
                 disabled={!isChatReady}
                 style={{
-                  flex: 1,
+                  // flex: 1,
                   padding: "8px 12px",
                   border: "1px solid #ccc",
                   borderRadius: "20px",
