@@ -700,7 +700,11 @@ const SellerDashboard = () => {
       setRoom(livekitRoom);
       setIsChatEnabled(true);
 
-      const localTracks = await createLocalTracks({ audio: true, video: true });
+      const localTracks = await createLocalTracks({   audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true,
+  }, video: true });
 
       for (const track of localTracks) {
         await livekitRoom.localParticipant.publishTrack(track);
@@ -814,7 +818,11 @@ const SellerDashboard = () => {
       await room.localParticipant.unpublishTrack(currentAudioTrackRef.current);
       currentAudioTrackRef.current.stop();
     } else {
-      const audioTracks = await createLocalTracks({ audio: true });
+      const audioTracks = await createLocalTracks({  audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      }});
       const micTrack = audioTracks.find(t => t.kind === "audio");
       if (micTrack) {
         await room.localParticipant.publishTrack(micTrack);
