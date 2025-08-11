@@ -502,6 +502,9 @@ const BuyerDashboard = () => {
     };
   }, []);
 
+
+  
+
   const generateViewerIdentity = () => {
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
     return `Viewer${randomNumber}`;
@@ -728,6 +731,28 @@ const BuyerDashboard = () => {
     setIsChatReady(false);
     setMessage("You have left the stream.");
   };
+
+  useEffect(() => {
+  const handlePopState = (event) => {
+    if (activeRoom) {
+      event.preventDefault();
+      handleLeave();
+      // Push state again so it doesn't go back to login
+      window.history.pushState(null, "", window.location.href);
+    }
+  };
+
+  // Prevent back navigation when in a live room
+  if (activeRoom) {
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+  }
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, [activeRoom]);
+
 
   return (
     <div className="buyer-dashboard">

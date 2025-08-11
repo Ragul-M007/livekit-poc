@@ -593,6 +593,27 @@ const SellerDashboard = () => {
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, [room]);
 
+
+  useEffect(() => {
+  const handlePopState = (event) => {
+    if (room && localStorage.getItem("is_live") === "true") {
+      event.preventDefault();
+      handleEndLive(); 
+      window.history.pushState(null, "", window.location.href);
+    }
+  };
+
+  if (room && localStorage.getItem("is_live") === "true") {
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+  }
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, [room]);
+
+
   const generateBroadcasterIdentity = () => {
     const userId = localStorage.getItem("user_id");
     const timestamp = Date.now();
@@ -652,7 +673,14 @@ const SellerDashboard = () => {
       }
     } catch (error) {
       console.error("Live start error:", error);
-      setMessage("An error occurred while starting the live stream.");
+      // Show backend error if available, else fallback
+      if (error.response?.data?.detail) {
+        setMessage(error.response.data.detail);
+      } else if (error.response?.data?.message) {
+        setMessage(error.response.data.message);
+      } else {
+        setMessage("An error occurred while starting the live stream.");
+      }
     } finally {
       setLoading(false);
     }
