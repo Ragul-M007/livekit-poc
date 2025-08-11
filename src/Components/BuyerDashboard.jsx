@@ -840,6 +840,7 @@ const BuyerDashboard = () => {
                 padding: "10px",
                 fontWeight: "600",
                 borderBottom: "1px solid #eee",
+                color:'black'
               }}
             >
               Live Chat
